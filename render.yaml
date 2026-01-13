@@ -4,6 +4,7 @@ services:
     env: docker
     plan: free
     dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
     envVars:
       - key: MB_DB_TYPE
         value: postgres
@@ -29,10 +30,15 @@ services:
           property: host
       - key: PORT
         value: 3000
+      - key: MB_JETTY_PORT
+        value: 3000
       - key: JAVA_TIMEZONE
         value: UTC
+      - key: MB_DB_CONNECTION_TIMEOUT_MS
+        value: 10000
 
 databases:
   - name: metabase-db
     databaseName: metabase
     plan: free
+    postgresMajorVersion: 16

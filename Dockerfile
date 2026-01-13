@@ -17,5 +17,5 @@ EXPOSE 3000
 # Set environment variable for port
 ENV MB_JETTY_PORT=3000
 
-# Run Metabase
-CMD ["java", "-jar", "metabase.jar"]
+# Run Metabase with memory constraints for free tier (512MB RAM)
+CMD ["java", "-Xmx256m", "-Xms128m", "-XX:+UseContainerSupport", "-Dfile.encoding=UTF-8", "-jar", "metabase.jar"]

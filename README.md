@@ -6,35 +6,45 @@ Metabase analytics platform configured for deployment on Render.
 
 Metabase is an open-source business intelligence tool that helps you ask questions about your data and visualize the answers.
 
-## Quick Deploy to Render
+## Quick Deploy to Render with Neon Database
 
 ### Prerequisites
-- A Render account (free tier available)
+- A [Render](https://render.com/) account (free tier available)
+- A [Neon](https://neon.tech/) account (free tier available)
 - A GitHub account
 
 ### Deployment Steps
 
-1. **Push to GitHub**
-   ```bash
-   git add .
-   git commit -m "Initial commit"
-   git remote add origin https://github.com/your-username/kohai-metabase.git
-   git push -u origin master
-   ```
+**📖 See [NEON_SETUP.md](./NEON_SETUP.md) for detailed step-by-step instructions**
+
+#### Quick Summary:
+
+1. **Create Neon Database**
+   - Sign up at [Neon Console](https://console.neon.tech/)
+   - Create a new project
+   - Copy the **pooled connection string**
 
 2. **Deploy on Render**
    - Go to [Render Dashboard](https://dashboard.render.com/)
-   - Click "New +" and select "Blueprint"
-   - Connect your GitHub repository
-   - Render will automatically detect the `render.yaml` file
-   - Click "Apply" to create both the web service and PostgreSQL database
-   - Wait for deployment to complete (5-10 minutes)
+   - Click "New +" → "Web Service"
+   - Connect this GitHub repository
+   - Add environment variable:
+     - `MB_DB_CONNECTION_URI` = (your Neon connection string)
+   - Click "Create Web Service"
 
 3. **Access Your Metabase**
-   - Once deployed, click on the web service URL
+   - Wait 10-15 minutes for deployment
+   - Click on the web service URL
    - Complete the initial Metabase setup wizard
    - Create your admin account
    - Start analyzing your data
+
+### Why Neon Database?
+
+- **Better Free Tier**: 3GB storage vs Render's 1GB
+- **Always On**: No auto-suspend on free tier
+- **Faster**: Better performance and reliability
+- **Serverless**: Auto-scales when needed
 
 ## Project Structure
 
@@ -42,11 +52,11 @@ Metabase is an open-source business intelligence tool that helps you ask questio
 kohai-metabase/
 ├── Dockerfile              # Docker configuration for Render
 ├── render.yaml            # Render deployment configuration
+├── NEON_SETUP.md          # Detailed Neon database setup guide
 ├── start.sh              # Startup script for Metabase
 ├── package.json          # Node.js project metadata
 ├── .env.example          # Environment variables template
 ├── .gitignore           # Git ignore rules
-├── metabase.jar         # Metabase application (optional, will download if missing)
 └── README.md            # This file
 ```
 
@@ -54,15 +64,14 @@ kohai-metabase/
 
 ### Environment Variables
 
-The following environment variables are automatically configured by Render:
+Required environment variables for Render:
 
 - `MB_DB_TYPE`: Database type (postgres)
-- `MB_DB_DBNAME`: Database name
-- `MB_DB_HOST`: Database host
-- `MB_DB_PORT`: Database port
-- `MB_DB_USER`: Database username
-- `MB_DB_PASS`: Database password
+- `MB_DB_CONNECTION_URI`: Your Neon database connection string
 - `PORT`: Application port (3000)
+- `MB_JETTY_PORT`: Metabase server port (3000)
+
+See `.env.example` for a complete list of available configuration options.
 
 ### Custom Configuration
 
@@ -70,6 +79,7 @@ To customize your Metabase deployment:
 
 1. Edit the environment variables in Render Dashboard
 2. Refer to [Metabase Documentation](https://www.metabase.com/docs/latest/) for additional configuration options
+3. See [NEON_SETUP.md](./NEON_SETUP.md) for database-specific configuration
 
 ## Local Development
 
@@ -87,40 +97,63 @@ Visit `http://localhost:3000` to access Metabase.
 
 ## Database
 
-This deployment uses PostgreSQL as the application database (free tier on Render). The H2 database files in this repository are for local development only and are not used in production.
+This deployment uses **Neon PostgreSQL** as the application database:
 
-## Render Free Tier Limitations
+- **Production**: Neon serverless PostgreSQL (3GB free tier)
+- **Local Development**: H2 database files (included in repo, not used in production)
 
-- Web service will spin down after 15 minutes of inactivity
-- First request after spin-down may take 30-60 seconds
+See [NEON_SETUP.md](./NEON_SETUP.md) for detailed database setup instructions.
+
+## Free Tier Limitations
+
+### Render Web Service (Free Tier)
+- Spins down after 15 minutes of inactivity
+- First request after spin-down takes 30-60 seconds
 - 750 hours of runtime per month
-- PostgreSQL database limited to 1GB storage
+- 512MB RAM
+
+### Neon Database (Free Tier)
+- 3GB storage
+- Auto-suspends after inactivity (resumes in milliseconds)
+- Unlimited compute hours
+- 1 project
 
 ## Troubleshooting
 
 ### Service won't start
 - Check the Render logs for errors
-- Ensure PostgreSQL database is running
-- Verify environment variables are set correctly
+- Verify `MB_DB_CONNECTION_URI` is set correctly in Render environment variables
+- Ensure Neon database connection string includes `?sslmode=require`
 
-### Can't connect to database
-- Verify database credentials in environment variables
-- Check that database service is in the same region
-- Ensure database is fully provisioned
+### Can't connect to Neon database
+- Verify you're using the **pooled connection** string from Neon
+- Check connection string format: `postgresql://user:pass@host.neon.tech/db?sslmode=require`
+- Ensure Neon database is active (check Neon console)
 
 ### Slow performance
-- Free tier services spin down after inactivity
-- Consider upgrading to a paid plan for always-on service
+- Render free tier spins down after 15 minutes of inactivity
+- First request after spin-down takes 30-60 seconds
+- Consider upgrading to Render paid plan ($7/month) for always-on service
+
+### Out of memory errors
+- The Dockerfile is optimized for 512MB RAM (Render free tier)
+- If issues persist, consider upgrading to a larger Render plan
+
+See [NEON_SETUP.md](./NEON_SETUP.md) for more troubleshooting tips
 
 ## Support
 
-For Metabase-specific questions, visit:
+For Metabase-specific questions:
 - [Metabase Documentation](https://www.metabase.com/docs/latest/)
 - [Metabase Forum](https://discourse.metabase.com/)
 
 For Render deployment issues:
 - [Render Documentation](https://render.com/docs)
 - [Render Community](https://community.render.com/)
+
+For Neon database issues:
+- [Neon Documentation](https://neon.tech/docs)
+- [Neon Discord](https://discord.gg/92vNTzKDGp)
 
 ## License
 

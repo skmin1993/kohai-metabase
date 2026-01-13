@@ -8,37 +8,11 @@ services:
     envVars:
       - key: MB_DB_TYPE
         value: postgres
-      - key: MB_DB_DBNAME
-        fromDatabase:
-          name: metabase-db
-          property: database
-      - key: MB_DB_PORT
-        fromDatabase:
-          name: metabase-db
-          property: port
-      - key: MB_DB_USER
-        fromDatabase:
-          name: metabase-db
-          property: user
-      - key: MB_DB_PASS
-        fromDatabase:
-          name: metabase-db
-          property: password
-      - key: MB_DB_HOST
-        fromDatabase:
-          name: metabase-db
-          property: host
+      - key: MB_DB_CONNECTION_URI
+        sync: false
       - key: PORT
         value: 3000
       - key: MB_JETTY_PORT
         value: 3000
       - key: JAVA_TIMEZONE
         value: UTC
-      - key: MB_DB_CONNECTION_TIMEOUT_MS
-        value: 10000
-
-databases:
-  - name: metabase-db
-    databaseName: metabase
-    plan: free
-    postgresMajorVersion: 16
